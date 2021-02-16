@@ -36,62 +36,71 @@ public class CoreDataFeedStore: FeedStore {
 	}
 	
 	public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
-		
-		do {
+		let context = self.context
+		context.perform {
 			
-			let request = CoreDataFeedCache.request
-			
-			if let cache = try context.fetch(request).first {
-				context.delete(cache)
-				try context.save()
+			do {
+				
+				let request = CoreDataFeedCache.request
+				
+				if let cache = try context.fetch(request).first {
+					context.delete(cache)
+					try context.save()
+				}
+				
+				completion(nil)
+			} catch {
+				completion(error)
 			}
-			
-			completion(nil)
-		} catch {
-			completion(error)
 		}
 	}
 	
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
-		
-		do {
+		let context = self.context
+		context.perform {
 			
-			let request = CoreDataFeedCache.request
-			
-			if let cache = try context.fetch(request).first {
-				context.delete(cache)
+			do {
+				
+				let request = CoreDataFeedCache.request
+				
+				if let cache = try context.fetch(request).first {
+					context.delete(cache)
+				}
+				
+				let cache = CoreDataFeedCache(context: context)
+				cache.timestamp = timestamp
+				cache.feed = NSOrderedSet(array: feed.map { local in
+					let core = CoreDataFeedImage(context: context)
+					core.id = local.id
+					core.image_description = local.description
+					core.location = local.location
+					core.url = local.url
+					return core
+				})
+				
+				try context.save()
+				completion(nil)
+			} catch {
+				completion(error)
 			}
-			
-			let cache = CoreDataFeedCache(context: context)
-			cache.timestamp = timestamp
-			cache.feed = NSOrderedSet(array: feed.map { local in
-				let core = CoreDataFeedImage(context: context)
-				core.id = local.id
-				core.image_description = local.description
-				core.location = local.location
-				core.url = local.url
-				return core
-			})
-			
-			try context.save()
-			completion(nil)
-		} catch {
-			completion(error)
 		}
 	}
 	
 	public func retrieve(completion: @escaping RetrievalCompletion) {
-		
-		do {
-			let request = CoreDataFeedCache.request
+		let context = self.context
+		context.perform {
 			
-			if let cache = try context.fetch(request).first {
-				completion(.found(feed: cache.localFeed, timestamp: cache.timestamp))
-			} else {
-				completion(.empty)
+			do {
+				let request = CoreDataFeedCache.request
+				
+				if let cache = try context.fetch(request).first {
+					completion(.found(feed: cache.localFeed, timestamp: cache.timestamp))
+				} else {
+					completion(.empty)
+				}
+			} catch {
+				completion(.failure(error))
 			}
-		} catch {
-			completion(.failure(error))
 		}
 	}
 	
