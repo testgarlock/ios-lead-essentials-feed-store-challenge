@@ -14,13 +14,13 @@ public class CoreDataFeedStore: FeedStore {
 	let container: NSPersistentContainer
 	let context: NSManagedObjectContext
 	
-	public init() {
+	public init(storeURL: URL) {
 		
 		let bundle = Bundle(for: CoreDataFeedStore.self)
 		let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd")!
 		let model = NSManagedObjectModel(contentsOf: modelURL)!
 		
-		let description = NSPersistentStoreDescription(url: URL(fileURLWithPath: "/dev/null"))
+		let description = NSPersistentStoreDescription(url: storeURL)
 		
 		let container = NSPersistentContainer(name: "CoreDataFeedStore", managedObjectModel: model)
 		container.persistentStoreDescriptions = [description]
