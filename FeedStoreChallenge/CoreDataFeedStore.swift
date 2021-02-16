@@ -46,3 +46,18 @@ public class CoreDataFeedStore: FeedStore {
 	}
 	
 }
+
+
+@objc(CoreDataFeedCache)
+private class CoreDataFeedCache: NSManagedObject {
+	@NSManaged var timestamp: Date
+	@NSManaged var feed: [CoreDataFeedImage]
+}
+
+@objc(CoreDataFeedImage)
+private class CoreDataFeedImage: NSManagedObject {
+	@NSManaged var id: UUID
+	@NSManaged var image_description: String?
+	@NSManaged var location: String?
+	@NSManaged var url: URL
+}
