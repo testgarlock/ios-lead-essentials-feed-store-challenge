@@ -36,7 +36,21 @@ public class CoreDataFeedStore: FeedStore {
 	}
 	
 	public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
-		completion(nil)
+		
+		do {
+			
+			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
+			request.returnsObjectsAsFaults = false
+			
+			if let cache = try context.fetch(request).first {
+				context.delete(cache)
+				try context.save()
+			}
+			
+			completion(nil)
+		} catch {
+			completion(error)
+		}
 	}
 	
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
