@@ -19,7 +19,10 @@ public class CoreDataFeedStore: FeedStore {
 		let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd")!
 		let model = NSManagedObjectModel(contentsOf: modelURL)!
 		
+		let description = NSPersistentStoreDescription(url: URL(fileURLWithPath: "/dev/null"))
+		
 		let container = NSPersistentContainer(name: "CoreDataFeedStore", managedObjectModel: model)
+		container.persistentStoreDescriptions = [description]
 		
 		container.loadPersistentStores { _, error in
 			if let error = error {
