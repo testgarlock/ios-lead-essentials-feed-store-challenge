@@ -39,8 +39,7 @@ public class CoreDataFeedStore: FeedStore {
 		
 		do {
 			
-			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
-			request.returnsObjectsAsFaults = false
+			let request = CoreDataFeedCache.request
 			
 			if let cache = try context.fetch(request).first {
 				context.delete(cache)
@@ -57,8 +56,7 @@ public class CoreDataFeedStore: FeedStore {
 		
 		do {
 			
-			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
-			request.returnsObjectsAsFaults = false
+			let request = CoreDataFeedCache.request
 			
 			if let cache = try context.fetch(request).first {
 				context.delete(cache)
@@ -85,8 +83,7 @@ public class CoreDataFeedStore: FeedStore {
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		
 		do {
-			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
-			request.returnsObjectsAsFaults = false
+			let request = CoreDataFeedCache.request
 			
 			if let cache = try context.fetch(request).first {
 				completion(.found(feed: cache.localFeed, timestamp: cache.timestamp))
@@ -101,6 +98,11 @@ public class CoreDataFeedStore: FeedStore {
 }
 
 private extension CoreDataFeedCache {
+	static var request: NSFetchRequest<CoreDataFeedCache> {
+		let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
+		request.returnsObjectsAsFaults = false
+		return request
+	}
 	var localFeed: [LocalFeedImage] {
 		return feed.compactMap { ($0 as? CoreDataFeedImage)?.localImage }
 	}
