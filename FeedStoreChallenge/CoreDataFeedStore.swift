@@ -43,6 +43,13 @@ public class CoreDataFeedStore: FeedStore {
 		
 		do {
 			
+			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
+			request.returnsObjectsAsFaults = false
+			
+			if let cache = try context.fetch(request).first {
+				context.delete(cache)
+			}
+			
 			let cache = CoreDataFeedCache(context: context)
 			cache.timestamp = timestamp
 			cache.feed = NSOrderedSet(array: feed.map { local in
