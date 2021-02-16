@@ -40,7 +40,25 @@ public class CoreDataFeedStore: FeedStore {
 	}
 	
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
-		completion(nil)
+		
+		do {
+			
+			let cache = CoreDataFeedCache(context: context)
+			cache.timestamp = timestamp
+			cache.feed = NSOrderedSet(array: feed.map { local in
+				let core = CoreDataFeedImage(context: context)
+				core.id = local.id
+				core.image_description = local.description
+				core.location = local.location
+				core.url = local.url
+				return core
+			})
+			
+			try context.save()
+			completion(nil)
+		} catch {
+			completion(error)
+		}
 	}
 	
 	public func retrieve(completion: @escaping RetrievalCompletion) {
@@ -49,8 +67,8 @@ public class CoreDataFeedStore: FeedStore {
 			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
 			request.returnsObjectsAsFaults = false
 			
-			if let _ = try context.fetch(request).first {
-				
+			if let cache = try context.fetch(request).first {
+				completion(.found(feed: cache.localFeed, timestamp: cache.timestamp))
 			} else {
 				completion(.empty)
 			}
@@ -61,11 +79,21 @@ public class CoreDataFeedStore: FeedStore {
 	
 }
 
+private extension CoreDataFeedCache {
+	var localFeed: [LocalFeedImage] {
+		return feed.compactMap { ($0 as? CoreDataFeedImage)?.localImage }
+	}
+}
+private extension CoreDataFeedImage {
+	var localImage: LocalFeedImage {
+		return LocalFeedImage(id: id, description: image_description, location: location, url: url)
+	}
+}
 
 @objc(CoreDataFeedCache)
 private class CoreDataFeedCache: NSManagedObject {
 	@NSManaged var timestamp: Date
-	@NSManaged var feed: [CoreDataFeedImage]
+	@NSManaged var feed: NSOrderedSet
 }
 
 @objc(CoreDataFeedImage)
