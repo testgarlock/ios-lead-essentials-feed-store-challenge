@@ -12,6 +12,7 @@ import CoreData
 public class CoreDataFeedStore: FeedStore {
 	
 	let container: NSPersistentContainer
+	let context: NSManagedObjectContext
 	
 	public init() {
 		
@@ -31,6 +32,7 @@ public class CoreDataFeedStore: FeedStore {
 		}
 		
 		self.container = container
+		self.context = container.newBackgroundContext()
 	}
 	
 	public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
@@ -42,7 +44,19 @@ public class CoreDataFeedStore: FeedStore {
 	}
 	
 	public func retrieve(completion: @escaping RetrievalCompletion) {
-		completion(.empty)
+		
+		do {
+			let request = NSFetchRequest<CoreDataFeedCache>(entityName: "CoreDataFeedCache")
+			request.returnsObjectsAsFaults = false
+			
+			if let _ = try context.fetch(request).first {
+				
+			} else {
+				completion(.empty)
+			}
+		} catch {
+			completion(.failure(error))
+		}
 	}
 	
 }
