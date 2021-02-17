@@ -19,9 +19,7 @@ public class CoreDataFeedStore: FeedStore {
 		case container(Swift.Error)
 	}
 	
-	public init(storeURL: URL) throws {
-		
-		let bundle = Bundle(for: CoreDataFeedStore.self)
+	public init(storeURL: URL, bundle: Bundle = .main) throws {
 		
 		guard let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd"),
 			  let model = NSManagedObjectModel(contentsOf: modelURL)
