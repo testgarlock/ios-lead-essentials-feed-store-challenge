@@ -112,6 +112,7 @@ private extension CoreDataFeedCache {
 		request.returnsObjectsAsFaults = false
 		return request
 	}
+	
 	var localFeed: [LocalFeedImage] {
 		return feed.compactMap { ($0 as? CoreDataFeedImage)?.localImage }
 	}
