@@ -14,11 +14,19 @@ public class CoreDataFeedStore: FeedStore {
 	let container: NSPersistentContainer
 	let context: NSManagedObjectContext
 	
-	public init(storeURL: URL) {
+	enum Error: Swift.Error {
+		case modelNotFound
+	}
+	
+	public init(storeURL: URL) throws {
 		
 		let bundle = Bundle(for: CoreDataFeedStore.self)
-		let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd")!
-		let model = NSManagedObjectModel(contentsOf: modelURL)!
+		
+		guard let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd"),
+			  let model = NSManagedObjectModel(contentsOf: modelURL)
+		else {
+			throw Error.modelNotFound
+		}
 		
 		let description = NSPersistentStoreDescription(url: storeURL)
 		
