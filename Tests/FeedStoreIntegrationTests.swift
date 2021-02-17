@@ -27,9 +27,9 @@ class FeedStoreIntegrationTests: XCTestCase {
 	}
 	
 	func test_retrieve_deliversEmptyOnEmptyCache() {
-		//        let sut = makeSUT()
-		//
-		//        expect(sut, toRetrieve: .empty)
+		let sut = makeSUT()
+
+		expect(sut, toRetrieve: .empty)
 	}
 	
 	func test_retrieve_deliversFeedInsertedOnAnotherInstance() {
@@ -72,8 +72,19 @@ class FeedStoreIntegrationTests: XCTestCase {
 	// - MARK: Helpers
 	
 	private func makeSUT() -> FeedStore {
-		fatalError("Must be implemented")
+		let storeURL = testingStoreURL()
+		let bundle = Bundle(for: CoreDataFeedStore.self)
+		return try! CoreDataFeedStore(storeURL: storeURL, bundle: bundle)
 	}
+	
+	private func testingStoreURL() -> URL {
+		return cachesURL().appendingPathComponent("\(type(of: self)).store")
+	}
+	
+	private func cachesURL() -> URL {
+		return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+	}
+	
 	
 	private func setupEmptyStoreState() {
 		
