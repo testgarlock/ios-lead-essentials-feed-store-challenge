@@ -14,32 +14,8 @@ public class CoreDataFeedStore: FeedStore {
 	let container: NSPersistentContainer
 	let context: NSManagedObjectContext
 	
-	enum LoadError: Swift.Error {
-		case model
-		case container(Swift.Error)
-	}
-	
 	public init(storeURL: URL, bundle: Bundle = .main) throws {
-		
-		guard let modelURL = bundle.url(forResource: "CoreDataFeedStore", withExtension: "momd"),
-			  let model = NSManagedObjectModel(contentsOf: modelURL)
-		else {
-			throw LoadError.model
-		}
-		
-		let description = NSPersistentStoreDescription(url: storeURL)
-		
-		let container = NSPersistentContainer(name: "CoreDataFeedStore", managedObjectModel: model)
-		container.persistentStoreDescriptions = [description]
-		
-		var containerError: Error?
-		container.loadPersistentStores { _, error in
-			containerError = error
-		}
-		
-		try containerError.map { throw LoadError.container($0) }
-		
-		self.container = container
+		self.container = try NSPersistentContainer.load(name: "CoreDataFeedStore", in: bundle, with: storeURL)
 		self.context = container.newBackgroundContext()
 	}
 	
@@ -112,6 +88,35 @@ public class CoreDataFeedStore: FeedStore {
 		}
 	}
 	
+}
+
+private extension NSPersistentContainer {
+	enum LoadError: Swift.Error {
+		case model
+		case container(Swift.Error)
+	}
+	
+	static func load(name: String, in bundle: Bundle, with storeURL: URL) throws -> NSPersistentContainer {
+		guard let modelURL = bundle.url(forResource: name, withExtension: "momd"),
+			  let model = NSManagedObjectModel(contentsOf: modelURL)
+		else {
+			throw LoadError.model
+		}
+		
+		let description = NSPersistentStoreDescription(url: storeURL)
+		
+		let container = NSPersistentContainer(name: name, managedObjectModel: model)
+		container.persistentStoreDescriptions = [description]
+		
+		var containerError: Error?
+		container.loadPersistentStores { _, error in
+			containerError = error
+		}
+		
+		try containerError.map { throw LoadError.container($0) }
+		
+		return container
+	}
 }
 
 private extension CoreDataFeedCache {
